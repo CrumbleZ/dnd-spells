@@ -1,0 +1,94 @@
+\documentclass{article}
+
+%% Positionning, alignments and tables
+\usepackage{enumitem}
+\usepackage{graphbox, minibox}
+\usepackage[table]{xcolor}
+\usepackage{multirow, tabularx}
+	\renewcommand\tabularxcolumn[1]{m{#1}}
+	\newcolumntype{S}{>{\centering\arraybackslash}p{0.18\textwidth}}
+	\newcolumntype{M}[1]{>{\raggedleft\arraybackslash}m{#1}}
+
+%% Make the card the size of an MTG Card
+\usepackage[paperheight=8.89cm,paperwidth=6.35cm,margin=0.5cm]{geometry}
+
+%% Set the background of a card
+\usepackage{background}
+\backgroundsetup{
+    contents={\includegraphics[width=\paperwidth,height=\paperheight]{images/background}}
+}
+
+%% Fonts and colors
+\usepackage{fontspec}
+\setmainfont[
+	BoldFont={Mrs Eaves OT Bold}]{Mrs Eaves OT}
+
+\definecolor{dnd-red}{RGB}{88,23,13}
+\definecolor{dnd-lightgreen}{RGB}{224,229,193}
+
+%% Custom commands for icons and other specific display
+
+	% Spellname and ritual
+	\newcommand{\spellname}[1]{\centering\color{dnd-red}\textsc{#1}}
+	\newcommand{\ritual}{
+		\centering
+		\includegraphics[align=c, scale=0.12]{./images/requirements/ritual.png}
+		\textsc{\scriptsize{ritual}}}
+	
+	
+	% Spell level
+	\newcommand{\spelllevel}[1]{\raisebox{-0.33em}{\huge\textsc{#1}}}
+	\newcommand{\spellleveltext}{\tiny\textsc{spell level}}
+	\newcommand{\cantriptext}{\tiny\textsc{cantrip}}
+	
+	% School of magic
+	\newcommand{\magicschool}[1]{
+		\includegraphics[align=c, scale=0.09]{./images/magic/#1.png}}
+	\newcommand{\magicschooltext}[1]{\tiny\textsc{#1}}
+	
+	% Spell info
+	\newcommand{\casttime}[1]{
+		\includegraphics[align=c, scale=0.2]{./images/requirements/casttime.png}
+		\hspace{0.1em}
+		\raisebox{-0.05em}{\textsc{#1}}}
+	\newcommand{\range}[1]{
+		\includegraphics[align=c, scale=0.2]{./images/requirements/range.png}
+		\hspace{0.1em}
+		\raisebox{-0.1em}{\textsc{#1}}}
+	\newcommand{\area}[2]{
+		\raisebox{-0.1em}{/ \textsc{#1}}
+		\hspace{0.1em}
+		\includegraphics[align=c, scale=0.2]{./images/area/#2.png}}
+	\newcommand{\duration}[1]{
+		\includegraphics[align=c, scale=0.2]{./images/requirements/duration.png}
+		\hspace{0.1em}
+		\raisebox{-0.15em}{\textsc{#1}}}
+	\newcommand{\concentration}{
+		\includegraphics[scale=0.12]{./images/requirements/concentration.png}
+		\hspace{0.1em}}
+		
+	\newcommand{\spellref}[1]{\raggedleft{\footnotesize\textbf{{#1}}}}
+	
+
+
+	% COMPONENTS
+
+\newcommand{\verbal}{\makebox[0.13\textwidth]{
+		\includegraphics[align=c, scale=0.25]{./images/requirements/verbal.png}}}		
+\newcommand{\somatic}{\makebox[0.13\textwidth]{
+	\includegraphics[align=c, scale=0.25]{./images/requirements/somatic.png}}}
+\newcommand{\material}{\makebox[0.13\textwidth]{
+	\includegraphics[align=c, scale=0.25]{./images/requirements/material.png}}}
+\newcommand{\nverbal}{\makebox[0.13\textwidth]{
+	\includegraphics[align=c, scale=0.25]{./images/requirements/non-verbal.png}}}
+\newcommand{\nsomatic}{\makebox[0.13\textwidth]{
+	\includegraphics[align=c, scale=0.25]{./images/requirements/non-somatic.png}}}
+\newcommand{\nmaterial}{\makebox[0.13\textwidth]{
+	\includegraphics[align=c, scale=0.25]{./images/requirements/no-material.png}}}
+
+%%%%%% SETTINGS
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{1pt}
+\setlength{\parskip}{1mm}
+\setlength{\itemsep}{0pt}
+\setlist[itemize]{leftmargin=3mm}
