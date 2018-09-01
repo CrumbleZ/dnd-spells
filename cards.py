@@ -60,7 +60,7 @@ def write_spell_requirements(file, spell):
     components += "\\material" if "M" in spell.components else "\\nmaterial"
 
     text = text.replace("<casttime>", spell.casting_time)
-    text = text.replace("<rage>", spell.spell_range)
+    text = text.replace("<range>", spell.spell_range)
     text = text.replace("<duration>", spell.duration)
     text = text.replace("<components>", components)
 
