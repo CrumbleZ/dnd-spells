@@ -63,7 +63,7 @@ def write_spell_requirements(file, spell):
     text = text.replace("<components>", components)
 
     if spell.materials is not None:
-        text = text.replace("<materials", spell.materials)
+        text = text.replace("<materials>", spell.materials)
 
     if spell.area is not None:
         text = text.replace("<area>", "\\area{{{}}}{{{}}}".format(spell.area, spell.area_type))
