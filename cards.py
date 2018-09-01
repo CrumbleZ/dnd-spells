@@ -7,7 +7,7 @@ def make_paths(spell):
     the spell. Creates the folders if they do not exist
     """
     for dnd_class in spell.classes:
-        dirname = "./latex/{}".format(dnd_class.replace(' ', '-'))
+        dirname = "./latex/generated/{}".format(dnd_class.replace(' ', '-'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
