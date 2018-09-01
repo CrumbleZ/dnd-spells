@@ -1,7 +1,7 @@
 import os
 from spells import Spell
 
-_GENERATED = "./latex/generated/"
+_TEXFOLDER = "./../latex/"
 
 def make_paths(spell):
     """
@@ -9,7 +9,7 @@ def make_paths(spell):
     the spell. Creates the folders if they do not exist
     """
     for dnd_class in spell.classes:
-        dirname = "{}/{}".format(_GENERATED, dnd_class.replace(' ', '-'))
+        dirname = _TEXFOLDER + "generated/{}".format(dnd_class.replace(' ', '-'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
@@ -18,7 +18,7 @@ def write_preamble(file):
     Place the LaTeX pre-written preamble in top of the spell file
     for it to compile with the LuaLaTeX engine
     """
-    with open("./latex/fillers/spell-preamble.tex") as preamble:
+    with open(_TEXFOLDER + "fillers/spell-preamble.tex") as preamble:
         file.write(preamble.read())
 
 def write_spell_header(file, spell):
@@ -28,7 +28,7 @@ def write_spell_header(file, spell):
         complimentary tag (ritual, feature) if it exists
     """
 
-    with open("./latex/fillers/header-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/header-filler.tex") as filler:
         text = filler.read()
 
     text = text.replace("<school>", spell.school.lower())
@@ -51,7 +51,7 @@ def write_spell_requirements(file, spell):
         the verbal, somatic and eventual material components required
     """
 
-    with open("./latex/fillers/requirements-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/requirements-filler.tex") as filler:
         text = filler.read()
 
     components = ""
@@ -78,7 +78,7 @@ def write_spell_details(file, spell):
         the spell description and its reference w/o the spell upgrade details
     """
 
-    with open("./latex/fillers/details-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/details-filler.tex") as filler:
         text = filler.read()
 
     #TODO : IMPORTANT manage text length
@@ -101,7 +101,7 @@ def write_spell_upgrade(file, spell):
 def create_spell_card(spell):
     make_paths(spell)
     dnd_class = spell.classes[0].replace(' ', '-')
-    filename = "{}/{}/{}-{}.tex".format(_GENERATED, dnd_class, spell.level, spell.dirname())
+    filename = _TEXFOLDER + "generated/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
 
     with open(filename, "w+") as spell_file:
         write_preamble(spell_file)
