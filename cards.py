@@ -1,13 +1,15 @@
 import os
 from spells import Spell
 
+_GENERATED = "./latex/generated/"
+
 def make_paths(spell):
     """
     Verify that the appropriate folders exists for each class that can use
     the spell. Creates the folders if they do not exist
     """
     for dnd_class in spell.classes:
-        dirname = "./latex/generated/{}".format(dnd_class.replace(' ', '-'))
+        dirname = "{}/{}".format(_GENERATED, dnd_class.replace(' ', '-'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
@@ -99,7 +101,7 @@ def write_spell_upgrade(file, spell):
 def create_spell_card(spell):
     make_paths(spell)
     dnd_class = spell.classes[0].replace(' ', '-')
-    filename = "./latex/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
+    filename = "{}/{}/{}-{}.tex".format(_GENERATED, dnd_class, spell.level, spell.dirname())
 
     with open(filename, "w+") as spell_file:
         write_preamble(spell_file)
@@ -111,4 +113,6 @@ def create_spell_card(spell):
         write_spell_upgrade(spell_file, spell)
 
         spell_file.write("\\end{document}\n")
+
     #TODO : Create spell upgrade footer if it exists
+    #TODO : Copy the spell to the other classes folder if needed
