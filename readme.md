@@ -1,3 +1,5 @@
+PROJECT IS NOT COMPLETE YET : WORK IN PROGRESS
+
 # What is dnd-spells ?
 
 The project is a reference cards generator for the 5th edition of dungeon and dragons. It operates by getting the spell description over at dndbeyond.com and generate LaTeX source files to displays the relevant information in a condensed fashion on a card the same size as Magic : The Gathering(TM).
