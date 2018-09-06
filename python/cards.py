@@ -81,7 +81,6 @@ def write_spell_details(file, spell):
     with open(_TEXFOLDER + "fillers/details-filler.tex") as filler:
         text = filler.read()
 
-    #TODO : IMPORTANT manage text length
     text = text.replace("<description>", spell.description)
     text = text.replace("<reference>", spell.reference)
 
