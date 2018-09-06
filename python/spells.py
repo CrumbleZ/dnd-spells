@@ -65,11 +65,16 @@ class Spell:
 
     @staticmethod
     def extract_area(dom):
-        return dom.css(".aoe-size::text").extract_first().strip()[1:]
+        area = dom.css(".aoe-size::text").extract_first()
+        return area.strip()[1:] if area else None
 
     @staticmethod
     def extract_area_type(dom):
-        return re.search("<i class=\"i-aoe-(\w+)\"", dom.css(".aoe-size").extract_first().strip()).group(1)
+        area_type = dom.css(".aoe-size").extract_first()
+        if area_type:
+            area_type = re.search("<i class=\"i-aoe-(\w+)\"", area_type.strip()).group(1)
+            return area_type
+        return None
 
     @staticmethod
     def extract_components(dom):
@@ -77,7 +82,8 @@ class Spell:
 
     @staticmethod
     def extract_materials(dom):
-        return dom.css(".components-blurb::text").extract_first().strip()[5:-1]
+        materials = dom.css(".components-blurb::text").extract_first()
+        return materials.strip()[5:-1] if materials else None
 
     @staticmethod
     def extract_duration(dom):
@@ -92,7 +98,8 @@ class Spell:
     @staticmethod
     def extract_reference(dom):
         book = dom.css(".spell-source::text").extract_first().strip()
-        page = re.search("\d+", dom.css(".page-number::text").extract_first().strip()).group(0)
+        page = dom.css(".page-number::text").extract_first()
+        page = re.search("\d+", page.strip()).group(0) if page else "?"
         ref_code = {"Basic Rules": "PHB","Elemental Evil Player's Companion" : "XGE",}
         return "{} {}".format(ref_code[book], page)
 
@@ -103,16 +110,17 @@ class Spell:
     @staticmethod
     def get_spell(spell_name):
         """fetches a spell on dndbeyond.com"""
-        #spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
-        #spell_name = spell_name.lower().replace(" ", "-")
-        #spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
-        #response = requests.get(spell_url)
+        print("---- Spell object : " + spell_name)
+        spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
+        spell_name = spell_name.lower().replace(" ", "-")
+        spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
+        response = requests.get(spell_url)
 
-        source = open("./spell.txt")
-        dom = Selector(text=source.read())
-        source.close()
+        #source = open("./spell.txt")
+        #dom = Selector(text=source.read())
+        #source.close()
 
-        #dom = Selector(response=response)
+        dom = Selector(response=response)
         name = Spell.extract_name(dom)
         level = Spell.extract_level(dom)
         school = Spell.extract_school(dom)
@@ -130,3 +138,25 @@ class Spell:
 
         return Spell(name, level, school, casting_time, spell_range, area, area_type,
                      components, materials, duration, description, reference, classes)
+
+    @staticmethod
+    def get_all_spells():
+        spells = set()
+        page_number = 1
+        flag = True
+
+        while flag:
+            print("fetching spell page " + str(page_number))
+            spell_page_url = "https://www.dndbeyond.com/spells?page={}".format(page_number)
+            dom = Selector(response=requests.get(spell_page_url))
+
+            for spell in dom.css(".name .link::text").extract():
+                if spell in spells:
+                    flag = False
+                    break
+                spells.add(Spell.get_spell(spell))
+
+            page_number += 1
+
+        print("done fetching spells")
+        return spells
