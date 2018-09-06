@@ -1,7 +1,10 @@
 import os
+import re
 from spells import Spell
 
 _TEXFOLDER = "./../latex/"
+_SMALL_BOX = str(2.95)
+_BIG_BOX = str(4.35)
 
 def make_paths(spell):
     """
@@ -81,12 +84,25 @@ def write_spell_details(file, spell):
     with open(_TEXFOLDER + "fillers/details-filler.tex") as filler:
         text = filler.read()
 
+    #Verify if there is a spell upgrade
+    match = re.search("(^At Higher Levels\..*$)|(^.*5th.*11th.*17th.*$)", spell.description, re.MULTILINE)
+
+    if match:
+        spell.description = spell.description[:match.start()].strip()
+        text = text.replace("<box_height>", _SMALL_BOX)
+    else:
+        text = text.replace("<box_height>", _BIG_BOX)
+
     text = text.replace("<description>", spell.description)
     text = text.replace("<reference>", spell.reference)
 
     file.write(text + "\n\n")
 
-def write_spell_upgrade(file, spell):
+    if match:
+        write_spell_upgrade(file, match.group(0))
+
+
+def write_spell_upgrade(file, upgrade_text):
     """
     The spell upgrade of the card consists of :
         the upgrade details of the spell based on the player level or
@@ -94,8 +110,22 @@ def write_spell_upgrade(file, spell):
 
     The footer exists if and only if the upgrade exists
     """
-    return None
+    ## CHECK IF THE UPGRADE IS BASED ON SPELL SLOTS
+    if re.search("^At Higher Levels\.", upgrade_text):
+        with open(_TEXFOLDER + "fillers/spellslot-upgrade-filler.tex") as filler:
+            text = filler.read()
 
+        text = text.replace("<upgrade>", upgrade_text[18:])
+    ## OTHERWISE PROCEED WITH THE PLAYER LEVEL UPGRADE
+    else:
+        with open(_TEXFOLDER + "fillers/player-upgrade-filler.tex") as filler:
+            text = filler.read()
+
+        text = text.replace("<1st>", "coucou")
+        text = text.replace("<2nd>", "salut")
+        text = text.replace("<3rd>", "tafiole")
+
+    file.write(text + "\n\n")
 
 def create_spell_card(spell):
     make_paths(spell)
@@ -109,7 +139,6 @@ def create_spell_card(spell):
         write_spell_header(spell_file, spell)
         write_spell_requirements(spell_file, spell)
         write_spell_details(spell_file, spell)
-        write_spell_upgrade(spell_file, spell)
 
         spell_file.write("\\end{document}\n")
 

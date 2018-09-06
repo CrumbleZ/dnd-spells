@@ -4,10 +4,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{minipage}[t]{\textwidth}
-\setlength{\parskip}{0.6em} \linespread{0.5}
     \begin{tikzpicture}[y=-1cm]
-	\clip (.1, 0) rectangle (5.5, 4.35);
-	\node [align=justify, text width=5.35cm, anchor=north west] (text) at (0,0) {\footnotesize <description>};
+	\clip (.1, 0) rectangle (5.5, <box_height>);
+	\node [align=justify, text width=5.35cm, anchor=north west] (text) at (0,0) {\setlength{\parindent}{1em} \linespread{0.5} \footnotesize <description>};
 	\end{tikzpicture}
 \end{minipage}
 

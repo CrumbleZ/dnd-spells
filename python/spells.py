@@ -85,7 +85,7 @@ class Spell:
 
     @staticmethod
     def extract_description(dom):
-        description = "".join("{} ".format(p) for p in dom.css(".more-info-content p").extract())
+        description = "".join("{}\n\n".format(p) for p in dom.css(".more-info-content p").extract())
         description = re.sub("<.+?>", '', description)
         return description
 
