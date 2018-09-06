@@ -1,5 +1,6 @@
 import os
 import re
+from shutil import copy as sh_copy
 from spells import Spell
 
 _TEXFOLDER = "./../latex/"
@@ -142,5 +143,6 @@ def create_spell_card(spell):
 
         spell_file.write("\\end{document}\n")
 
-    #TODO : Create spell upgrade footer if it exists
-    #TODO : Copy the spell to the other classes folder if needed
+    for remaining_class in spell.classes[1:]:
+        remaining_class = remaining_class.replace(' ', '-')
+        sh_copy(filename, _TEXFOLDER + "generated/{}/".format(remaining_class))
