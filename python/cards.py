@@ -129,6 +129,7 @@ def write_spell_upgrade(file, upgrade_text):
     file.write(text + "\n\n")
 
 def create_spell_card(spell):
+    print("Generating card for :" + spell.name)
     make_paths(spell)
     dnd_class = spell.classes[0].replace(' ', '-')
     filename = _TEXFOLDER + "generated/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
