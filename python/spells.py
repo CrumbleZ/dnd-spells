@@ -111,6 +111,7 @@ class Spell:
     def get_spell(spell_name):
         """fetches a spell on dndbeyond.com"""
         print("---- Spell object : " + spell_name)
+        spell_name = re.sub("[/]", '-', spell_name)
         spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
         spell_name = spell_name.lower().replace(" ", "-")
         spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
