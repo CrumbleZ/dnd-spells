@@ -1,5 +1,10 @@
 import os
+import re
 from spells import Spell
+
+_TEXFOLDER = "./../latex/"
+_SMALL_BOX = str(2.95)
+_BIG_BOX = str(4.35)
 
 def make_paths(spell):
     """
@@ -7,7 +12,7 @@ def make_paths(spell):
     the spell. Creates the folders if they do not exist
     """
     for dnd_class in spell.classes:
-        dirname = "./latex/{}".format(dnd_class.replace(' ', '-'))
+        dirname = _TEXFOLDER + "generated/{}".format(dnd_class.replace(' ', '-'))
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
@@ -16,7 +21,7 @@ def write_preamble(file):
     Place the LaTeX pre-written preamble in top of the spell file
     for it to compile with the LuaLaTeX engine
     """
-    with open("./latex/fillers/spell-preamble.tex") as preamble:
+    with open(_TEXFOLDER + "fillers/spell-preamble.tex") as preamble:
         file.write(preamble.read())
 
 def write_spell_header(file, spell):
@@ -26,7 +31,7 @@ def write_spell_header(file, spell):
         complimentary tag (ritual, feature) if it exists
     """
 
-    with open("./latex/fillers/header-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/header-filler.tex") as filler:
         text = filler.read()
 
     text = text.replace("<school>", spell.school.lower())
@@ -49,7 +54,7 @@ def write_spell_requirements(file, spell):
         the verbal, somatic and eventual material components required
     """
 
-    with open("./latex/fillers/requirements-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/requirements-filler.tex") as filler:
         text = filler.read()
 
     components = ""
@@ -58,12 +63,12 @@ def write_spell_requirements(file, spell):
     components += "\\material" if "M" in spell.components else "\\nmaterial"
 
     text = text.replace("<casttime>", spell.casting_time)
-    text = text.replace("<rage>", spell.spell_range)
+    text = text.replace("<range>", spell.spell_range)
     text = text.replace("<duration>", spell.duration)
     text = text.replace("<components>", components)
 
     if spell.materials is not None:
-        text = text.replace("<materials", spell.materials)
+        text = text.replace("<materials>", spell.materials)
 
     if spell.area is not None:
         text = text.replace("<area>", "\\area{{{}}}{{{}}}".format(spell.area, spell.area_type))
@@ -76,16 +81,28 @@ def write_spell_details(file, spell):
         the spell description and its reference w/o the spell upgrade details
     """
 
-    with open("./latex/fillers/details-filler.tex") as filler:
+    with open(_TEXFOLDER + "fillers/details-filler.tex") as filler:
         text = filler.read()
 
-    #TODO : IMPORTANT manage text length
+    #Verify if there is a spell upgrade
+    match = re.search("(^At Higher Levels\..*$)|(^.*5th.*11th.*17th.*$)", spell.description, re.MULTILINE)
+
+    if match:
+        spell.description = spell.description[:match.start()].strip()
+        text = text.replace("<box_height>", _SMALL_BOX)
+    else:
+        text = text.replace("<box_height>", _BIG_BOX)
+
     text = text.replace("<description>", spell.description)
     text = text.replace("<reference>", spell.reference)
 
     file.write(text + "\n\n")
 
-def write_spell_upgrade(file, spell):
+    if match:
+        write_spell_upgrade(file, match.group(0))
+
+
+def write_spell_upgrade(file, upgrade_text):
     """
     The spell upgrade of the card consists of :
         the upgrade details of the spell based on the player level or
@@ -93,13 +110,27 @@ def write_spell_upgrade(file, spell):
 
     The footer exists if and only if the upgrade exists
     """
-    return None
+    ## CHECK IF THE UPGRADE IS BASED ON SPELL SLOTS
+    if re.search("^At Higher Levels\.", upgrade_text):
+        with open(_TEXFOLDER + "fillers/spellslot-upgrade-filler.tex") as filler:
+            text = filler.read()
 
+        text = text.replace("<upgrade>", upgrade_text[18:])
+    ## OTHERWISE PROCEED WITH THE PLAYER LEVEL UPGRADE
+    else:
+        with open(_TEXFOLDER + "fillers/player-upgrade-filler.tex") as filler:
+            text = filler.read()
+
+        text = text.replace("<1st>", "coucou")
+        text = text.replace("<2nd>", "salut")
+        text = text.replace("<3rd>", "tafiole")
+
+    file.write(text + "\n\n")
 
 def create_spell_card(spell):
     make_paths(spell)
     dnd_class = spell.classes[0].replace(' ', '-')
-    filename = "./latex/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
+    filename = _TEXFOLDER + "generated/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
 
     with open(filename, "w+") as spell_file:
         write_preamble(spell_file)
@@ -108,7 +139,8 @@ def create_spell_card(spell):
         write_spell_header(spell_file, spell)
         write_spell_requirements(spell_file, spell)
         write_spell_details(spell_file, spell)
-        write_spell_upgrade(spell_file, spell)
 
         spell_file.write("\\end{document}\n")
+
     #TODO : Create spell upgrade footer if it exists
+    #TODO : Copy the spell to the other classes folder if needed
