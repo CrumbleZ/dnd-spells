@@ -1,9 +1,13 @@
 
-import re
+import re, os
 import requests
 from scrapy.selector import Selector
 
 class Spell:
+
+    _GENERATED_FOLDER = "./generated/"
+    _DL_CACHE_FOLDER = _GENERATED_FOLDER + "dl_cache/"
+    _SPELL_HTML_CACHE = _DL_CACHE_FOLDER + "spells.html"
 
     def __init__(self, name, level, school, casting_time, spell_range, area, area_type,
                  components, materials, duration, description, reference, classes):
@@ -102,17 +106,21 @@ class Spell:
 
     @staticmethod
     def get_spell(spell_name):
-        """fetches a spell on dndbeyond.com"""
-        #spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
-        #spell_name = spell_name.lower().replace(" ", "-")
-        #spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
-        #response = requests.get(spell_url)
+        """fetches a spell on dndbeyond.com
+        caches the request for future use"""
 
-        source = open("./spell.txt")
-        dom = Selector(text=source.read())
-        source.close()
+        if os.path.isfile(Spell._SPELL_HTML_CACHE):
+            with open(Spell._SPELL_HTML_CACHE) as f:
+                dom = Selector(text=f.read())
+        else:
+            spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
+            spell_name = spell_name.lower().replace(" ", "-")
+            spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
+            response = requests.get(spell_url)
+            with open(Spell._SPELL_HTML_CACHE, "w+") as f:
+                f.write(response.text)
+            dom = Selector(response=response)
 
-        #dom = Selector(response=response)
         name = Spell.extract_name(dom)
         level = Spell.extract_level(dom)
         school = Spell.extract_school(dom)

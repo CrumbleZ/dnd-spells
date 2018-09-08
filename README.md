@@ -23,4 +23,5 @@ If you are a copyright owner and would like me to remove copyrighted content, em
 - `pipenv install`
 
 # Run
-- `pipenv run python python/main.py`
+- `cd python`
+- `pipenv run python main.py`
