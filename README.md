@@ -10,7 +10,7 @@ The minimum you need to run the project are :
 * Python 3.5+ with `pipenv`
 * LuaLaTeX 0.95+
 
-Additional requirements for Python packages can be found in the requirements.txt file.
+Additional requirements for Python packages can be found in the `Pipfile`.
 Additional requirements for LaTeX should be prompted to you by your LaTeX package manager at the appropriate time if needed.
 
 # Fair Use notice
