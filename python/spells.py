@@ -2,6 +2,7 @@
 import re, os
 import requests
 from scrapy.selector import Selector
+from tokens import COBALT_SESSION
 
 class Spell:
 
@@ -104,7 +105,10 @@ class Spell:
         book = dom.css(".spell-source::text").extract_first().strip()
         page = dom.css(".page-number::text").extract_first()
         page = re.search("\d+", page.strip()).group(0) if page else "?"
-        ref_code = {"Basic Rules": "PHB","Elemental Evil Player's Companion" : "XGE",}
+        ref_code = {
+            "Basic Rules": "PHB",
+            "Player's Handbook": "PHB",
+            "Elemental Evil Player's Companion" : "XGE",}
         return "{} {}".format(ref_code[book], page)
 
     @staticmethod
@@ -113,7 +117,6 @@ class Spell:
 
     @staticmethod
     def get_spell(spell_name):
-<<<<<<< HEAD
         """fetches a spell on dndbeyond.com
         caches the request for future use"""
 
@@ -124,26 +127,11 @@ class Spell:
             spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
             spell_name = spell_name.lower().replace(" ", "-")
             spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
-            response = requests.get(spell_url)
+            response = requests.get(spell_url, headers={"cookie":"CobaltSession=" + COBALT_SESSION})
             with open(Spell._SPELL_HTML_CACHE, "w+") as f:
                 f.write(response.text)
             dom = Selector(response=response)
 
-=======
-        """fetches a spell on dndbeyond.com"""
-        print("---- Spell object : " + spell_name)
-        spell_name = re.sub("[/]", '-', spell_name)
-        spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
-        spell_name = spell_name.lower().replace(" ", "-")
-        spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
-        response = requests.get(spell_url)
-
-        #source = open("./spell.txt")
-        #dom = Selector(text=source.read())
-        #source.close()
-
-        dom = Selector(response=response)
->>>>>>> Attempts to fetch all spells
         name = Spell.extract_name(dom)
         level = Spell.extract_level(dom)
         school = Spell.extract_school(dom)
