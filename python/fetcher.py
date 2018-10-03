@@ -1,10 +1,21 @@
+import re
 import requests
 from itertools import count
+from os.path import isfile
+from random import choice as random_choice
 from scrapy.selector import Selector
+from time import sleep
+from tokens import COBALT_SESSION
+from utils import random_user_agent
+
 
 _CLEAR_LINE = "\033[K"
+
 _DDB = "https://www.dndbeyond.com"
+_DDB_SPELLS = _DDB + "/spells"
+
 _GENERATED_FOLDER = "./generated/"
+_HTML_CACHE_FOLDER = _GENERATED_FOLDER + "html-cache/"
 _SPELLS_LIST = "spells_list.lst"
 
 
@@ -12,9 +23,10 @@ def update_spell_list():
     """
     Fetches every spell name on ddb and stores them in a file.
     """
-    # Fetches all spell on DDB
+
+    # Fetches all spell names on DDB
     spells = []
-    dom = Selector(response=requests.get(_DDB + "/spells"))
+    dom = Selector(response=requests.get(_DDB_SPELLS))
 
     while True:
         for spell in dom.css(".name .link::text").extract():
@@ -38,3 +50,41 @@ def update_spell_list():
     with open(_GENERATED_FOLDER + _SPELLS_LIST, "w+") as f:
         for spell in spells:
             f.write(spell + "\n")
+
+def get_spell(name, overwrite_existing=False):
+    """
+    Fetches the given spell and stores its html content into
+    a download cache folder.
+    """
+    #Sanitize the spell's name for url's and filenames
+    name = name.strip()
+    sanitized_name = re.sub("[^-a-zA-Z0-9\ ]", '', name)
+    sanitized_name = sanitized_name.lower().replace(" ", "-")
+
+    #Check if the spell is already cached
+    if not overwrite_existing:
+        if isfile(_HTML_CACHE_FOLDER + sanitized_name + ".html"):
+            return
+
+    #Otherwise download it and cache it
+    spell_url = _DDB_SPELLS + "/" + sanitized_name
+    headers = {
+        "User-Agent": random_user_agent(),
+        "cookie":"CobaltSession=" + COBALT_SESSION,
+    }
+    response = requests.get(spell_url, headers=headers)
+    if response.status_code == 200:
+        dom = Selector(response=response)
+        with open(_HTML_CACHE_FOLDER + sanitized_name + ".html", "w+") as html:
+            html.write("<h1 class=\"page-title\">{}</h1>\n".format(name))
+            html.write(dom.css(".details-more-info").extract_first())
+    else:
+        print("Failed to fetch {} with status code {}".format(name, response.status_code))
+
+    #Road bump for request, trying to prevent getting blocked
+    sleep(.5)
+
+def get_all_spells(overwrite_existing=False):
+    with open(_GENERATED_FOLDER + _SPELLS_LIST, "r") as spells_list:
+        for spell_name in spells_list:
+            get_spell(spell_name, overwrite_existing)
