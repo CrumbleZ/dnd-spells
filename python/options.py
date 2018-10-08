@@ -1,4 +1,5 @@
 import fetcher
+import spells
 from argparse import ArgumentParser
 from sys import exit as sysexit
 
@@ -12,6 +13,8 @@ def main():
                         help="Updates the spell cache, without overwriting existing files.")
     parser.add_argument("-D", "--download-overwrite", action="store_true",
                         help="Updates the spell cache and overwrites existing files.")
+    parser.add_argument("-j", "--json", action="store_true",
+                        help="Translates the cached html files into json")
 
     args = parser.parse_args()
 
@@ -29,3 +32,6 @@ def main():
 
     if args.download_overwrite:
         fetcher.get_all_spells(overwrite_existing=True)
+
+    if args.json:
+        spells.jsonify()
