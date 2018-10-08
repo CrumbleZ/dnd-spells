@@ -35,7 +35,7 @@ def update_spell_list():
         next_page = dom.css(".b-pagination-item-next a::attr(href)").extract_first()
 
         if next_page is not None:
-            print(_CLEAR_LINE + "Fetching " + next_page, end="\r", flush=True)
+            print(_CLEAR_LINE + "Updating " + next_page, end="\r", flush=True)
 
             try:
                 dom = Selector(response=requests.get(_DDB + next_page))
@@ -44,9 +44,9 @@ def update_spell_list():
                 print("An error occured while fetching spells")
                 raise
         break
-    print("\nDone fetching spells")
+    print("\nDone updating spells list")
 
-    # Store all fetched spells in a csv file
+    # Store all fetched spells in a list file
     with open(_GENERATED_FOLDER + _SPELLS_LIST, "w+") as f:
         for spell in spells:
             f.write(spell + "\n")

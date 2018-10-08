@@ -1,3 +1,4 @@
+import re
 from random import choice as random_choice
 
 def random_user_agent():
@@ -25,4 +26,5 @@ def random_user_agent():
     return random_choice(user_agent_list)
 
 def sanitize_spell_name(spell_name):
-    return re.sub("[^-a-zA-Z0-9\ ]", '', spell_name).lower.replace(" ", "-")
+    spell_name = spell_name.replace("/", "-")   #this accounts for double-spells
+    return re.sub("[^-a-zA-Z0-9\ ]", '', spell_name).lower().replace(" ", "-")

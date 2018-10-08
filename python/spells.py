@@ -11,7 +11,9 @@ _HTML_CACHE_FOLDER = _GENERATED_FOLDER + "html-cache/"
 _JSON_CACHE_FOLDER = _GENERATED_FOLDER + "json-cache/"
 _LOGS_FOLDER = _GENERATED_FOLDER + "logs/"
 
-logging.basicConfig(filename=_LOGS_FOLDER + "spells.log", filemode="a+")
+_INFO_FORMAT = "BAD FORMAT: "
+
+logging.basicConfig(filename=_LOGS_FOLDER + "spells.log", filemode="w+")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -138,73 +140,73 @@ def html_to_json(html, jsonfile):
         level = Spell.extract_level(dom)
     except:
         level = "?"
-        logger.info("BAD FORMAT : The level of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The level of '{}' is unknown".format(name))
 
     try:
         school = Spell.extract_school(dom)
     except:
         school = "DM choice"
-        logger.info("BAD FORMAT  : The school of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The school of '{}' is unknown".format(name))
 
     try:
         casting_time = Spell.extract_casting_time(dom)
     except:
         casting_time = "DM choice"
-        logger.info("BAD FORMAT  : The casting time  of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The casting time  of '{}' is unknown".format(name))
 
     try:
         spell_range = Spell.extract_spell_range(dom)
     except:
         spell_range = "DM choice"
-        logger.info("BAD FORMAT  : The range of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The range of '{}' is unknown".format(name))
 
     try:
         area = Spell.extract_area(dom)
     except:
         "DM choice"
-        logger.info("BAD FORMAT  : The area size of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The area size of '{}' is unknown".format(name))
 
     try:
         area_type = Spell.extract_area_type(dom)
     except:
         area_type = None
-        logger.info("BAD FORMAT : Area type of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The area type of '{}' is unknown".format(name))
 
     try:
         components = Spell.extract_components(dom)
     except:
         components = "DM choice"
-        logger.info("BAD FORMAT : Components of '{}' are unknown".format(name))
+        logger.info(_INFO_FORMAT + "The components of '{}' are unknown".format(name))
 
     try:
         materials = Spell.extract_materials(dom)
     except:
         materials = "DM choice"
-        logger.info("BAD FORMAT : materials of '{}' are unknown".format(name))
+        logger.info(_INFO_FORMAT + "The materials of '{}' are unknown".format(name))
 
     try:
         duration = Spell.extract_duration(dom)
     except:
         duration = "DM choice"
-        logger.info("BAD FORMAT : Duration of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The duration of '{}' is unknown".format(name))
 
     try:
         description = Spell.extract_description(dom)
     except:
         description = "DESCRIPTION PLACEHOLDER"
-        logger.info("BAD FORMAT : Description of '{}' could not be found".format(name))
+        logger.info(_INFO_FORMAT + "The description of '{}' could not be found".format(name))
 
     try:
         reference = Spell.extract_reference(dom)
     except:
         reference = "UNK"
-        logger.info("BAD FORMAT : Reference of '{}' is unknown".format(name))
+        logger.info(_INFO_FORMAT + "The reference of '{}' is unknown".format(name))
 
     try:
         classes = Spell.extract_classes(dom)
     except:
         classes = []
-        logger.info("BAD FORMAT : Classes of '{}' could not be parsed".format(name))
+        logger.info(_INFO_FORMAT + "The classes of '{}' could not be parsed".format(name))
 
     spell = Spell(name, level, school, casting_time, spell_range, area,
                   area_type, components, materials, duration, description,
