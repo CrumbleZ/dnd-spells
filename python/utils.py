@@ -23,3 +23,6 @@ def random_user_agent():
     ]
 
     return random_choice(user_agent_list)
+
+def sanitize_spell_name(spell_name):
+    return re.sub("[^-a-zA-Z0-9\ ]", '', spell_name).lower.replace(" ", "-")
