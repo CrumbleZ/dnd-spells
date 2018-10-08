@@ -6,7 +6,7 @@ from random import choice as random_choice
 from scrapy.selector import Selector
 from time import sleep
 from tokens import COBALT_SESSION
-from utils import random_user_agent
+from utils import random_user_agent, sanitize_spell_name
 
 
 _CLEAR_LINE = "\033[K"
@@ -58,8 +58,7 @@ def get_spell(name, overwrite_existing=False):
     """
     #Sanitize the spell's name for url's and filenames
     name = name.strip()
-    sanitized_name = re.sub("[^-a-zA-Z0-9\ ]", '', name)
-    sanitized_name = sanitized_name.lower().replace(" ", "-")
+    sanitized_name = sanitize_spell_name(name)
 
     #Check if the spell is already cached
     if not overwrite_existing:
