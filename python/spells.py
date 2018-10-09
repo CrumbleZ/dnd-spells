@@ -1,17 +1,35 @@
-
-import re, os
+import json
+import logging
+import os
+import re
 import requests
 from scrapy.selector import Selector
 from tokens import COBALT_SESSION
 
+_GENERATED_FOLDER = "./generated/"
+_HTML_CACHE_FOLDER = _GENERATED_FOLDER + "html-cache/"
+_JSON_CACHE_FOLDER = _GENERATED_FOLDER + "json-cache/"
+_LOGS_FOLDER = _GENERATED_FOLDER + "logs/"
+
+_INFO_FORMAT = "BAD FORMAT: "
+
+logging.basicConfig(filename=_LOGS_FOLDER + "spells.log", filemode="w+")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
 class Spell:
 
-    _GENERATED_FOLDER = "./generated/"
-    _DL_CACHE_FOLDER = _GENERATED_FOLDER + "dl_cache/"
-    _SPELL_HTML_CACHE = _DL_CACHE_FOLDER + "spells.html"
+    ref_code = {
+        "Basic Rules": "PHB",
+        "Player's Handbook": "PHB",
+        "Elemental Evil Player's Companion" : "XGE",
+        "Xanathar's Guide to Everything" : "XGE",
+        "Sword Coast Adventurer's Guide" : "SCAG"}
 
-    def __init__(self, name, level, school, casting_time, spell_range, area, area_type,
-                 components, materials, duration, description, reference, classes):
+    def __init__(self, name, level, school, casting_time, spell_range, area,
+                 area_type, components, materials, duration, description,
+                 reference, classes):
         self.name = name
         self.level = level
         self.school = school
@@ -39,14 +57,6 @@ class Spell:
         print("-------------------------------------------------")
         print(self.reference, self.classes)
         return ""
-
-    def dirname(self):
-        return re.sub("[^-a-zA-Z0-9\ ]", '', self.name).lower().replace(" ", "-")
-
-    @staticmethod
-    def url_name(name):
-        name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
-        return name.lower().replace(" ", "-")
 
     @staticmethod
     def extract_name(dom):
@@ -105,69 +115,109 @@ class Spell:
         book = dom.css(".spell-source::text").extract_first().strip()
         page = dom.css(".page-number::text").extract_first()
         page = re.search("\d+", page.strip()).group(0) if page else "?"
-        ref_code = {
-            "Basic Rules": "PHB",
-            "Player's Handbook": "PHB",
-            "Elemental Evil Player's Companion" : "XGE",}
-        return "{} {}".format(ref_code[book], page)
+        if book in Spell.ref_code:
+            return "{} {}".format(Spell.ref_code[book], page)
+        else:
+            logger.info("Unknown reference : {}".format(book))
+            return "UNK {}".format(page)
 
     @staticmethod
     def extract_classes(dom):
         return [c.lower() for c in dom.css(".class-tag::text").extract()]
 
-    @staticmethod
-    def get_spell(spell_name):
-        """fetches a spell on dndbeyond.com
-        caches the request for future use"""
 
-        if os.path.isfile(Spell._SPELL_HTML_CACHE):
-            with open(Spell._SPELL_HTML_CACHE) as f:
-                dom = Selector(text=f.read())
-        else:
-            spell_name = re.sub("[^-a-zA-Z0-9\ ]", '', spell_name)
-            spell_name = spell_name.lower().replace(" ", "-")
-            spell_url = "https://www.dndbeyond.com/spells/{}".format(spell_name)
-            response = requests.get(spell_url, headers={"cookie":"CobaltSession=" + COBALT_SESSION})
-            with open(Spell._SPELL_HTML_CACHE, "w+") as f:
-                f.write(response.text)
-            dom = Selector(response=response)
 
-        name = Spell.extract_name(dom)
+def html_to_json(html, jsonfile):
+    """
+    Converts a spell described in a DDB html file
+    into a json file.
+    """
+    dom = Selector(text=html)
+
+    name = Spell.extract_name(dom)
+
+    try:
         level = Spell.extract_level(dom)
+    except:
+        level = "?"
+        logger.info(_INFO_FORMAT + "The level of '{}' is unknown".format(name))
+
+    try:
         school = Spell.extract_school(dom)
+    except:
+        school = "DM choice"
+        logger.info(_INFO_FORMAT + "The school of '{}' is unknown".format(name))
+
+    try:
         casting_time = Spell.extract_casting_time(dom)
+    except:
+        casting_time = "DM choice"
+        logger.info(_INFO_FORMAT + "The casting time  of '{}' is unknown".format(name))
+
+    try:
         spell_range = Spell.extract_spell_range(dom)
+    except:
+        spell_range = "DM choice"
+        logger.info(_INFO_FORMAT + "The range of '{}' is unknown".format(name))
+
+    try:
         area = Spell.extract_area(dom)
+    except:
+        "DM choice"
+        logger.info(_INFO_FORMAT + "The area size of '{}' is unknown".format(name))
+
+    try:
         area_type = Spell.extract_area_type(dom)
+    except:
+        area_type = None
+        logger.info(_INFO_FORMAT + "The area type of '{}' is unknown".format(name))
+
+    try:
         components = Spell.extract_components(dom)
+    except:
+        components = "DM choice"
+        logger.info(_INFO_FORMAT + "The components of '{}' are unknown".format(name))
+
+    try:
         materials = Spell.extract_materials(dom)
+    except:
+        materials = "DM choice"
+        logger.info(_INFO_FORMAT + "The materials of '{}' are unknown".format(name))
+
+    try:
         duration = Spell.extract_duration(dom)
+    except:
+        duration = "DM choice"
+        logger.info(_INFO_FORMAT + "The duration of '{}' is unknown".format(name))
+
+    try:
         description = Spell.extract_description(dom)
+    except:
+        description = "DESCRIPTION PLACEHOLDER"
+        logger.info(_INFO_FORMAT + "The description of '{}' could not be found".format(name))
 
+    try:
         reference = Spell.extract_reference(dom)
+    except:
+        reference = "UNK"
+        logger.info(_INFO_FORMAT + "The reference of '{}' is unknown".format(name))
+
+    try:
         classes = Spell.extract_classes(dom)
+    except:
+        classes = []
+        logger.info(_INFO_FORMAT + "The classes of '{}' could not be parsed".format(name))
 
-        return Spell(name, level, school, casting_time, spell_range, area, area_type,
-                     components, materials, duration, description, reference, classes)
+    spell = Spell(name, level, school, casting_time, spell_range, area,
+                  area_type, components, materials, duration, description,
+                  reference, classes)
 
-    @staticmethod
-    def get_all_spells():
-        spells = set()
-        page_number = 1
-        flag = True
+    with open(_JSON_CACHE_FOLDER + jsonfile, "w+") as j:
+        json.dump(spell.__dict__, j)
 
-        while flag:
-            print("fetching spell page " + str(page_number))
-            spell_page_url = "https://www.dndbeyond.com/spells?page={}".format(page_number)
-            dom = Selector(response=requests.get(spell_page_url))
 
-            for spell in dom.css(".name .link::text").extract():
-                if spell in spells:
-                    flag = False
-                    break
-                spells.add(Spell.get_spell(spell))
-
-            page_number += 1
-
-        print("done fetching spells")
-        return spells
+def jsonify():
+    for _, _, files in os.walk(_HTML_CACHE_FOLDER):
+        for name in files:
+            with open(_HTML_CACHE_FOLDER + name) as f:
+                html_to_json(f.read(), name.replace(".html", ".json"))

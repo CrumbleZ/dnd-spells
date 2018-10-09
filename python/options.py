@@ -1,4 +1,6 @@
 import fetcher
+from cards import generate_cards
+from spells import jsonify
 from argparse import ArgumentParser
 from sys import exit as sysexit
 
@@ -12,6 +14,10 @@ def main():
                         help="Updates the spell cache, without overwriting existing files.")
     parser.add_argument("-D", "--download-overwrite", action="store_true",
                         help="Updates the spell cache and overwrites existing files.")
+    parser.add_argument("-j", "--json", action="store_true",
+                        help="Translates the cached html files into json")
+    parser.add_argument("-x", "--latex", action="store_true",
+                        help="Generates LaTex documents organized by class based on the json files")
 
     args = parser.parse_args()
 
@@ -29,3 +35,9 @@ def main():
 
     if args.download_overwrite:
         fetcher.get_all_spells(overwrite_existing=True)
+
+    if args.json:
+        jsonify()
+
+    if args.latex:
+        generate_cards()

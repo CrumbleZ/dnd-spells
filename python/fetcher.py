@@ -6,7 +6,7 @@ from random import choice as random_choice
 from scrapy.selector import Selector
 from time import sleep
 from tokens import COBALT_SESSION
-from utils import random_user_agent
+from utils import random_user_agent, sanitize_spell_name
 
 
 _CLEAR_LINE = "\033[K"
@@ -35,7 +35,7 @@ def update_spell_list():
         next_page = dom.css(".b-pagination-item-next a::attr(href)").extract_first()
 
         if next_page is not None:
-            print(_CLEAR_LINE + "Fetching " + next_page, end="\r", flush=True)
+            print(_CLEAR_LINE + "Updating " + next_page, end="\r", flush=True)
 
             try:
                 dom = Selector(response=requests.get(_DDB + next_page))
@@ -44,9 +44,9 @@ def update_spell_list():
                 print("An error occured while fetching spells")
                 raise
         break
-    print("\nDone fetching spells")
+    print("\nDone updating spells list")
 
-    # Store all fetched spells in a csv file
+    # Store all fetched spells in a list file
     with open(_GENERATED_FOLDER + _SPELLS_LIST, "w+") as f:
         for spell in spells:
             f.write(spell + "\n")
@@ -58,8 +58,7 @@ def get_spell(name, overwrite_existing=False):
     """
     #Sanitize the spell's name for url's and filenames
     name = name.strip()
-    sanitized_name = re.sub("[^-a-zA-Z0-9\ ]", '', name)
-    sanitized_name = sanitized_name.lower().replace(" ", "-")
+    sanitized_name = sanitize_spell_name(name)
 
     #Check if the spell is already cached
     if not overwrite_existing:
@@ -87,4 +86,6 @@ def get_spell(name, overwrite_existing=False):
 def get_all_spells(overwrite_existing=False):
     with open(_GENERATED_FOLDER + _SPELLS_LIST, "r") as spells_list:
         for spell_name in spells_list:
+            print(_CLEAR_LINE + " " * 80, end="\r", flush=True)
+            print(_CLEAR_LINE + "Fetching : " + spell_name, end="\r", flush=True)
             get_spell(spell_name, overwrite_existing)
