@@ -24,10 +24,7 @@ def random_user_agent():
     ]
 
     return random_choice(user_agent_list)
-<<<<<<< HEAD
-=======
 
 def sanitize_spell_name(spell_name):
     spell_name = spell_name.replace("/", "-")   #this accounts for double-spells
     return re.sub("[^-a-zA-Z0-9\ ]", '', spell_name).lower().replace(" ", "-")
->>>>>>> 2cf71ed66959c22ba5f177e2b6936a9c58a0e2ea

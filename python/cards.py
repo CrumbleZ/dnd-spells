@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from shutil import copy as sh_copy
@@ -7,13 +8,18 @@ _TEXFOLDER = "./../latex/"
 _SMALL_BOX = str(2.95)
 _BIG_BOX = str(4.35)
 
+_GENERATED_FOLDER = "./generated/"
+_JSON_CACHE_FOLDER = _GENERATED_FOLDER + "json-cache/"
+
+
 def make_paths(spell):
     """
     Verify that the appropriate folders exists for each class that can use
     the spell. Creates the folders if they do not exist
     """
-    for dnd_class in spell.classes:
-        dirname = _TEXFOLDER + "generated/{}".format(dnd_class.replace(' ', '-'))
+    for dnd_class in spell["classes"]:
+        dnd_class = dnd_class.replace(" ", "-")
+        dirname = _TEXFOLDER + "generated/{}/".format(dnd_class)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
@@ -35,13 +41,13 @@ def write_spell_header(file, spell):
     with open(_TEXFOLDER + "fillers/header-filler.tex") as filler:
         text = filler.read()
 
-    text = text.replace("<school>", spell.school.lower())
-    text = text = text.replace("<name>", spell.name)
-    text = text.replace("<level>", spell.level)
+    text = text.replace("<school>", spell["school"].lower())
+    text = text = text.replace("<name>", spell["name"])
+    text = text.replace("<level>", spell["level"])
 
     #TODO : CHECK RITUAL OR FEATURE TRAIT
 
-    if spell.level == 0:
+    if spell["level"] == 0:
         text = text.replace("<leveltext>", "\\cantriptext")
     else:
         text = text.replace("<leveltext>", "\\spellleveltext")
@@ -59,20 +65,21 @@ def write_spell_requirements(file, spell):
         text = filler.read()
 
     components = ""
-    components += "\\verbal " if "V" in spell.components else "\\nverbal "
-    components += "\\somatic " if "S" in spell.components else "\\nosomatic "
-    components += "\\material" if "M" in spell.components else "\\nmaterial"
+    components += "\\verbal " if "V" in spell["components"] else "\\nverbal "
+    components += "\\somatic " if "S" in spell["components"] else "\\nosomatic "
+    components += "\\material" if "M" in spell["components"] else "\\nmaterial"
 
-    text = text.replace("<casttime>", spell.casting_time)
-    text = text.replace("<range>", spell.spell_range)
-    text = text.replace("<duration>", spell.duration)
+    text = text.replace("<casttime>", spell["casting_time"])
+    text = text.replace("<range>", spell["spell_range"])
+    text = text.replace("<duration>", spell["duration"])
     text = text.replace("<components>", components)
 
-    if spell.materials is not None:
-        text = text.replace("<materials>", spell.materials)
+    if spell["materials"] is not None:
+        text = text.replace("<materials>", spell["materials"])
 
-    if spell.area is not None:
-        text = text.replace("<area>", "\\area{{{}}}{{{}}}".format(spell.area, spell.area_type))
+    if spell["area"] is not None:
+        text = text.replace("<area>",
+               "\\area{{{}}}{{{}}}".format(spell["area"], spell["area_type"]))
 
     file.write(text + "\n\n")
 
@@ -86,16 +93,16 @@ def write_spell_details(file, spell):
         text = filler.read()
 
     #Verify if there is a spell upgrade
-    match = re.search("(^At Higher Levels\..*$)|(^.*5th.*11th.*17th.*$)", spell.description, re.MULTILINE)
+    match = re.search("(^At Higher Levels\..*$)|(^.*5th.*11th.*17th.*$)", spell["description"], re.MULTILINE)
 
     if match:
-        spell.description = spell.description[:match.start()].strip()
+        spell["description"] = spell["description"][:match.start()].strip()
         text = text.replace("<box_height>", _SMALL_BOX)
     else:
         text = text.replace("<box_height>", _BIG_BOX)
 
-    text = text.replace("<description>", spell.description)
-    text = text.replace("<reference>", spell.reference)
+    text = text.replace("<description>", spell["description"])
+    text = text.replace("<reference>", spell["reference"])
 
     file.write(text + "\n\n")
 
@@ -128,11 +135,11 @@ def write_spell_upgrade(file, upgrade_text):
 
     file.write(text + "\n\n")
 
-def create_spell_card(spell):
-    print("Generating card for :" + spell.name)
+def create_spell_card(spell, filename):
+    print("Generating card for : " + spell["name"])
     make_paths(spell)
-    dnd_class = spell.classes[0].replace(' ', '-')
-    filename = _TEXFOLDER + "generated/{}/{}-{}.tex".format(dnd_class, spell.level, spell.dirname())
+    dnd_class = spell["classes"][0].replace(' ', '-')
+    filename = _TEXFOLDER + "generated/{}/{}-{}".format(dnd_class, spell["level"], filename.replace(".json", ".tex"))
 
     with open(filename, "w+") as spell_file:
         write_preamble(spell_file)
@@ -144,6 +151,13 @@ def create_spell_card(spell):
 
         spell_file.write("\\end{document}\n")
 
-    for remaining_class in spell.classes[1:]:
+    for remaining_class in spell["classes"][1:]:
         remaining_class = remaining_class.replace(' ', '-')
         sh_copy(filename, _TEXFOLDER + "generated/{}/".format(remaining_class))
+
+def generate_cards():
+    for _, _, files in os.walk(_JSON_CACHE_FOLDER):
+        for filename in files:
+            with open(_JSON_CACHE_FOLDER + filename) as json_spell:
+                spell_data = json.load(json_spell)
+                create_spell_card(spell_data, filename)
