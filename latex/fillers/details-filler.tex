@@ -6,7 +6,8 @@
 \begin{minipage}[t]{\textwidth}
     \begin{tikzpicture}[y=-1cm]
 	\clip (.1, 0) rectangle (5.5, <box_height>);
-	\node [align=justify, text width=5.35cm, anchor=north west] (text) at (0,0) {\setlength{\parindent}{1em} \linespread{0.5} \footnotesize <description>};
+    \linespread{0.5};
+	\node [align=justify, text width=5.35cm, anchor=north west] (text) at (0,0) {\setlength{\parindent}{1em} \footnotesize <description>};
 	\end{tikzpicture}
 \end{minipage}
 
