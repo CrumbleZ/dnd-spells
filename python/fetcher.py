@@ -86,4 +86,6 @@ def get_spell(name, overwrite_existing=False):
 def get_all_spells(overwrite_existing=False):
     with open(_GENERATED_FOLDER + _SPELLS_LIST, "r") as spells_list:
         for spell_name in spells_list:
+            print(_CLEAR_LINE + " " * 80, end="\r", flush=True)
+            print(_CLEAR_LINE + "Fetching : " + spell_name, end="\r", flush=True)
             get_spell(spell_name, overwrite_existing)
