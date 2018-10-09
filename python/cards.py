@@ -66,7 +66,7 @@ def write_spell_requirements(file, spell):
 
     components = ""
     components += "\\verbal " if "V" in spell["components"] else "\\nverbal "
-    components += "\\somatic " if "S" in spell["components"] else "\\nosomatic "
+    components += "\\somatic " if "S" in spell["components"] else "\\nsomatic "
     components += "\\material" if "M" in spell["components"] else "\\nmaterial"
 
     text = text.replace("<casttime>", spell["casting_time"])
