@@ -1,8 +1,10 @@
 import json
 import os
 import re
+from os import remove as os_rm
 from shutil import copy as sh_copy
 from spells import Spell
+from subprocess import run as p_run
 
 _TEXFOLDER = "./../latex/"
 _SMALL_BOX = str(2.95)
@@ -156,8 +158,28 @@ def create_spell_card(spell, filename):
         sh_copy(filename, _TEXFOLDER + "generated/{}/".format(remaining_class))
 
 def generate_cards():
+    """
+    Generates a LaTeX document for every spell files
+    that can be found in the json-cache
+    """
     for _, _, files in os.walk(_JSON_CACHE_FOLDER):
         for filename in files:
             with open(_JSON_CACHE_FOLDER + filename) as json_spell:
                 spell_data = json.load(json_spell)
                 create_spell_card(spell_data, filename)
+
+def compile_cards():
+    """
+    Compiles every TeX document generated into pdf files
+    """
+    #generate pdfs
+    for dirpath, _, files in os.walk(_TEXFOLDER + _GENERATED_FOLDER):
+        for filename in files:
+            if filename.endswith(".tex"):
+                p_run(["lualatex", filename], cwd=dirpath)
+
+    #clears intermediate files
+    for dirpath, _, files in os.walk(_TEXFOLDER + _GENERATED_FOLDER):
+        for filename in files:
+            if filename.endswith(".aux") or filename.endswith(".log"):
+                os_rm("{}/{}".format(dirpath, filename))

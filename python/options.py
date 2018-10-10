@@ -1,4 +1,5 @@
 import fetcher
+from cards import compile_cards
 from cards import generate_cards
 from spells import jsonify
 from argparse import ArgumentParser
@@ -18,6 +19,8 @@ def main():
                         help="Translates the cached html files into json")
     parser.add_argument("-x", "--latex", action="store_true",
                         help="Generates LaTex documents organized by class based on the json files")
+    parser.add_argument("-p", "--pdf", action="store_true",
+                        help="Compiles every tex file into pdfs")
 
     args = parser.parse_args()
 
@@ -41,3 +44,6 @@ def main():
 
     if args.latex:
         generate_cards()
+
+    if args.pdf:
+        compile_cards()
